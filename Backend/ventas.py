@@ -38,3 +38,22 @@ def registrar_venta(venta: VentaCreate, db: Session = Depends(get_db)):
     db.refresh(nueva_venta)
 
     return nueva_venta
+
+@router.get("/", response_model=list[VentaResponse])
+def listar_ventas(db: Session = Depends(get_db)):
+    ventas = db.query(Venta).all()
+    return ventas
+
+@router.get("/{fecha}", response_model=VentaResponse)
+def obtener_venta(fecha: date, db: Session = Depends(get_db)):
+    venta = db.query(Venta).filter(
+        Venta.fecha == fecha
+    ).first()
+
+    if not venta:
+        raise HTTPException(
+            status_code=404,
+            detail="No existe venta para esa fecha"
+        )
+
+    return venta
