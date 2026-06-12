@@ -5,6 +5,7 @@ from datetime import date
 from database import get_db
 from models import ProduccionDiaria, Venta
 from schemas import ProduccionCreate, ProduccionResponse
+from auth import obtener_usuario_actual
 
 router = APIRouter(
     prefix="/produccion",
@@ -14,7 +15,8 @@ router = APIRouter(
 @router.post("/", response_model=ProduccionResponse)
 def registrar_produccion(
     produccion: ProduccionCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(obtener_usuario_actual)
 ):
     venta = db.query(Venta).filter(
         Venta.fecha == produccion.fecha
@@ -64,12 +66,14 @@ def registrar_produccion(
     return nueva_produccion
 
 @router.get("/", response_model=list[ProduccionResponse])
-def listar_produccion(db: Session = Depends(get_db)):
+def listar_produccion(db: Session = Depends(get_db), 
+            usuario_actual: str = Depends(obtener_usuario_actual)):
     producciones = db.query(ProduccionDiaria).all()
     return producciones
 
 @router.get("/{fecha}", response_model=ProduccionResponse)
-def obtener_produccion(fecha: date, db: Session = Depends(get_db)):
+def obtener_produccion(fecha: date, db: Session = Depends(get_db),
+            usuario_actual: str = Depends(obtener_usuario_actual)):
     produccion = db.query(ProduccionDiaria).filter(
         ProduccionDiaria.fecha == fecha
     ).first()

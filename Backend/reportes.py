@@ -4,6 +4,7 @@ from sqlalchemy import func
 
 from database import get_db
 from models import Venta, ProduccionDiaria
+from auth import obtener_usuario_actual
 
 router = APIRouter(
     prefix="/reportes",
@@ -11,7 +12,9 @@ router = APIRouter(
 )
 
 @router.get("/resumen")
-def obtener_reporte(db: Session = Depends(get_db)):
+def obtener_reporte(db: Session = Depends(get_db),
+            usuario_actual: str = Depends(obtener_usuario_actual)):
+    
     total_pan_sal_vendido = (db.query(func.sum(Venta.pan_sal_vendido)).scalar() or 0)
     total_pan_dulce_vendido = (db.query(func.sum(Venta.pan_dulce_vendido)).scalar() or 0)
     ingresos_totales = (db.query(func.sum(Venta.ingreso_total)).scalar() or 0)

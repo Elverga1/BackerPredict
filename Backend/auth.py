@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from database import get_db
 from models import Usuario
 from schemas import UsuarioCreate, UsuarioResponse, LoginRequest, Token
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 router = APIRouter(
     prefix="/auth",
@@ -20,6 +21,7 @@ pwd_context = CryptContext(
 SECRET_KEY = "clave_secreta_temporal" #Cambia la clave secreta, depende del equipo(pc)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def hashear_password(password: str):
     return pwd_context.hash(password[:72])
@@ -44,6 +46,30 @@ def crear_token(data: dict):
 
     return token
 
+def obtener_usuario_actual(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+
+        nombre = payload.get("sub")
+
+        if nombre is None:
+            raise HTTPException(
+                status_code=401,
+                detail="Token inválido"
+            )
+
+        return nombre
+
+    except:
+        raise HTTPException(
+            status_code=401,
+            detail="Token inválido o expirado"
+        )
+
 @router.post("/register", response_model=UsuarioResponse)
 def registrar_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     usuario_db = db.query(Usuario).filter(Usuario.nombre == usuario.nombre).first()
@@ -67,9 +93,12 @@ def registrar_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     return nuevo_usuario
 
 @router.post("/login", response_model=Token)
-def login(datos: LoginRequest, db: Session = Depends(get_db)):
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
     usuario_db = db.query(Usuario).filter(
-        Usuario.nombre == datos.nombre
+        Usuario.nombre == form_data.username
     ).first()
 
     if not usuario_db:
@@ -78,7 +107,7 @@ def login(datos: LoginRequest, db: Session = Depends(get_db)):
             detail="Usuario o contraseña incorrectos"
         )
 
-    if not verificar_password(datos.password, usuario_db.password_hash):
+    if not verificar_password(form_data.password, usuario_db.password_hash):
         raise HTTPException(
             status_code=401,
             detail="Usuario o contraseña incorrectos"
