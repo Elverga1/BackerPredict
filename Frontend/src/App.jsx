@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Ventas from "./pages/Ventas";
 import Produccion from "./pages/Produccion";
 import Reportes from "./pages/Reportes";
+import Clima from "./pages/Clima";
 
 function App() {
     const [token, setToken] = useState(
@@ -23,7 +24,10 @@ function App() {
     }
     if (pagina === "reportes") {
     return <Reportes setPagina={setPagina} />;
-    }  
+    } 
+    if (pagina === "clima") {
+        return <Clima setPagina={setPagina} />;
+    }
     return <Dashboard setPagina={setPagina} />;
 }
 

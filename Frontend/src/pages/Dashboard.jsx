@@ -27,6 +27,10 @@ function Dashboard({setPagina}) {
                     <span>Reportes</span>
                     <small>Ver resumen general</small>
                 </button>
+                <button onClick={() => setPagina("clima")} className="dashboard-card">
+                    <span>Clima</span>
+                    <small>Historial de clima</small>
+                </button>
             </div>
 
             <button
