@@ -5,6 +5,7 @@ import Ventas from "./pages/Ventas";
 import Produccion from "./pages/Produccion";
 import Reportes from "./pages/Reportes";
 import Clima from "./pages/Clima";
+import ReporteCompleto from "./pages/ReporteCompleto";
 
 function App() {
     const [token, setToken] = useState(
@@ -14,7 +15,7 @@ function App() {
     const [pagina, setPagina] = useState("dashboard");
 
     if (!token) {
-        return <Login />;
+        return <Login setToken={setToken} />;
     }
     if (pagina === "ventas") {
         return <Ventas setPagina={setPagina} />;
@@ -23,10 +24,13 @@ function App() {
         return <Produccion setPagina={setPagina} />;
     }
     if (pagina === "reportes") {
-    return <Reportes setPagina={setPagina} />;
+        return <Reportes setPagina={setPagina} />;
     } 
     if (pagina === "clima") {
         return <Clima setPagina={setPagina} />;
+    }
+    if (pagina === "reporteCompleto") {
+        return <ReporteCompleto setPagina={setPagina} />;
     }
     return <Dashboard setPagina={setPagina} />;
 }

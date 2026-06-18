@@ -1,8 +1,9 @@
 import React from "react";
 import {useState} from "react";
 import {login} from "../api/auth";
+import {registrarClimaHoy} from "../api/clima";
 
-function Login() {
+function Login({setToken}) {
     const [nombre, setNombre] = useState("");
     const [password, setPassword] = useState("");
 
@@ -14,7 +15,7 @@ function Login() {
                 try {
                     const data = await login(nombre, password);
                     console.log(data);
-                    alert("Inicio de sesión exitoso");
+                    setToken(data.access_token);
                 } catch (error) {
                     alert(error.message);
                 }

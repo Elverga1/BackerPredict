@@ -19,3 +19,20 @@ export async function obtenerReporte() {
 
     return await response.json();
 }
+
+export async function obtenerReporteCompleto() {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/reportes/completo`, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error("Error al obtener reporte completo");
+    }
+
+    return await response.json();
+}

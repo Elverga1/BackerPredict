@@ -5,6 +5,7 @@ from sqlalchemy import func
 from database import get_db
 from models import Venta, ProduccionDiaria
 from auth import obtener_usuario_actual
+from models import Venta, ProduccionDiaria, ClimaHistorico
 
 router = APIRouter(
     prefix="/reportes",
@@ -33,5 +34,40 @@ def obtener_reporte(db: Session = Depends(get_db),
         "total_pan_dulce_sobrante": total_pan_dulce_sobrante
     }
     
-    
+@router.get("/completo")
+def reporte_completo(
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(obtener_usuario_actual)
+):
+    ventas = db.query(Venta).all()
+
+    resultado = []
+
+    for venta in ventas:
+        produccion = db.query(ProduccionDiaria).filter(
+            ProduccionDiaria.fecha == venta.fecha
+        ).first()
+
+        clima = db.query(ClimaHistorico).filter(
+            ClimaHistorico.fecha == venta.fecha
+        ).first()
+
+        resultado.append({
+            "fecha": venta.fecha,
+            "pan_sal_vendido": venta.pan_sal_vendido,
+            "pan_dulce_vendido": venta.pan_dulce_vendido,
+            "ingreso_total": venta.ingreso_total,
+
+            "pan_sal_producido": produccion.pan_sal_producido if produccion else 0,
+            "pan_dulce_producido": produccion.pan_dulce_producido if produccion else 0,
+            "pan_sal_sobrante": produccion.pan_sal_sobrante if produccion else 0,
+            "pan_dulce_sobrante": produccion.pan_dulce_sobrante if produccion else 0,
+
+            "temperatura": clima.temperatura if clima else None,
+            "humedad": clima.humedad if clima else None,
+            "lluvia": clima.lluvia if clima else None,
+            "descripcion_clima": clima.descripcion if clima else "Sin registro"
+        })
+
+    return resultado
     
